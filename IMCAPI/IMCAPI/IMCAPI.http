@@ -1,20 +1,10 @@
-
-
-
-@baseUrl = https://localhost:7040
-
-### Calcular IMC (POST)
-POST https://localhost:7040/api/CalculoIMCs/Calcular
+POST {{baseUrl}}/api/CalculoIMCs/Calcular
 Content-Type: application/json
 
 {
-  "peso": 70,       
-  "alturaCm": 175   
-
-  {"peso": 20, "alturaCm": 50}    
-  {"peso": 300, "alturaCm": 250} 
-  {"peso": 65, "alturaCm": 170}   
+    "peso": 70,
+    "alturaCm": 175
 }
-### Obtener historial (GET)
+
 GET {{baseUrl}}/api/CalculoIMCs
 Accept: application/json
