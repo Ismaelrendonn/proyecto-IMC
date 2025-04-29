@@ -8,13 +8,13 @@ namespace IMCAPI.Tests.Models
     public class CalculoIMCRequestTests
     {
         [Theory]
-        [InlineData(20, 50, true)] // Mínimos válidos
-        [InlineData(300, 250, true)] // Máximos válidos
-        [InlineData(70, 175, true)] // Valores intermedios válidos
-        [InlineData(19, 50, false)] // Peso debajo del mínimo
-        [InlineData(301, 250, false)] // Peso arriba del máximo
-        [InlineData(70, 49, false)] // Altura debajo del mínimo
-        [InlineData(70, 251, false)] // Altura arriba del máximo
+        [InlineData(20, 50, true)] 
+        [InlineData(300, 250, true)] 
+        [InlineData(70, 175, true)] 
+        [InlineData(19, 50, false)] 
+        [InlineData(301, 250, false)]
+        [InlineData(70, 49, false)] 
+        [InlineData(70, 251, false)] 
         public void Validaciones_DevuelveResultadoEsperado(double peso, double alturaCm, bool esperadoValido)
         {
             // Arrange
