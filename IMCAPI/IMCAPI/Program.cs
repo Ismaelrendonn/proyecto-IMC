@@ -32,7 +32,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "API Calculadora IMC",
+        Title = "API Calculadora IMC 2025",
         Version = "v1",
         Description = "API para cálculo del Índice de Masa Corporal"
     });
