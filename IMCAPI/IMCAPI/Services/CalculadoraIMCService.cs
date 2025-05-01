@@ -4,7 +4,7 @@ namespace IMCAPI.Services
 {
     public class CalculadoraIMCService
     {
-        public (double imc, string categoria) CalcularIMC(double peso, double alturaEnMetros)
+        public virtual (double imc, string categoria) CalcularIMC(double peso, double alturaEnMetros)
         {
             if (peso <= 0 || alturaEnMetros <= 0)
                 throw new ArgumentException("Peso y altura deben ser positivos.");
