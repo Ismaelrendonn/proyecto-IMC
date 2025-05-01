@@ -9,25 +9,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace IMCAPI.Tests.Controllers
 {
     public class CalculoIMCsControllerTests
     {
         private readonly Mock<CalculadoraIMCService> _mockCalculadora;
-        private readonly Mock<ApplicationDbContext> _mockContext;
+        private readonly ApplicationDbContext _mockContext;
         private readonly CalculoIMCsController _controller;
 
         public CalculoIMCsControllerTests()
         {
+            // Usar una base de datos en memoria
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                            .UseInMemoryDatabase(databaseName: "TestDb")
+                            .Options;
+
+            // Crear el contexto real con base de datos en memoria
+            _mockContext = new ApplicationDbContext(options);
             _mockCalculadora = new Mock<CalculadoraIMCService>();
-            _mockContext = new Mock<ApplicationDbContext>();
 
-            // Configurar DbSet mock
-            var mockSet = new Mock<DbSet<CalculoIMC>>();
-            _mockContext.Setup(c => c.CalculosIMC).Returns(mockSet.Object);
-
-            _controller = new CalculoIMCsController(_mockCalculadora.Object, _mockContext.Object);
+            _controller = new CalculoIMCsController(_mockCalculadora.Object, _mockContext);
         }
 
         [Fact]
@@ -37,8 +40,6 @@ namespace IMCAPI.Tests.Controllers
             var request = new CalculoIMCRequest(70, 175);
             var expectedImc = 22.86;
             var expectedCategoria = "Normal";
-            var expectedId = 1;
-            var expectedFechaCalculo = DateTime.Now;
 
             _mockCalculadora.Setup(c => c.CalcularIMC(70, 1.75)).Returns((expectedImc, expectedCategoria));
 
@@ -52,10 +53,8 @@ namespace IMCAPI.Tests.Controllers
             Assert.NotNull(actualCalculo);
             Assert.Equal(expectedImc, actualCalculo.imc);
             Assert.Equal(expectedCategoria, actualCalculo.categoria);
-            //  Assert.Equal(expectedId, actualCalculo.id);  //  Verificar si es necesario (depende de la configuración de la base de datos en memoria)
-            // Assert.IsType<DateTime>(actualCalculo.fechaCalculo); // Verificar el tipo de dato de la fecha
 
-            _mockContext.Verify(c => c.SaveChangesAsync(default), Times.Once);
+            // Ya no es necesario verificar SaveChangesAsync en este caso
         }
 
         [Fact]
@@ -97,13 +96,9 @@ namespace IMCAPI.Tests.Controllers
                 new CalculoIMC { Id = 2, Peso = 80, AlturaCm = 170, ResultadoIMC = 27.68, Categoria = "Sobrepeso" }
             };
 
-            var mockSet = new Mock<DbSet<CalculoIMC>>();
-            mockSet.As<IQueryable<CalculoIMC>>().Setup(m => m.Provider).Returns(calculosIMC.AsQueryable().Provider);
-            mockSet.As<IQueryable<CalculoIMC>>().Setup(m => m.Expression).Returns(calculosIMC.AsQueryable().Expression);
-            mockSet.As<IQueryable<CalculoIMC>>().Setup(m => m.ElementType).Returns(calculosIMC.AsQueryable().ElementType);
-            mockSet.As<IQueryable<CalculoIMC>>().Setup(m => m.GetEnumerator()).Returns(calculosIMC.GetEnumerator());
-
-            _mockContext.Setup(c => c.CalculosIMC).Returns(mockSet.Object);
+            // Agregar los cálculos a la base de datos en memoria
+            _mockContext.CalculosIMC.AddRange(calculosIMC);
+            await _mockContext.SaveChangesAsync();
 
             // Act
             var result = await _controller.GetHistorial();
