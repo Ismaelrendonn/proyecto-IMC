@@ -2,7 +2,7 @@ using IMCAPI.Services;
 using Xunit;
 using System;
 
-namespace IMCAPI.Tests.Services
+namespace TestIMCAPI
 {
     public class CalculadoraIMCServiceTests
     {
