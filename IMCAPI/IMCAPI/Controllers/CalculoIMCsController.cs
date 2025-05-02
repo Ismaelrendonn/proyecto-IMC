@@ -1,82 +1,57 @@
-﻿using IMCAPI.Data;
-using IMCAPI.Models;
+﻿using IMCAPI.Models;
 using IMCAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace IMCAPI.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class CalculoIMCsController : ControllerBase
     {
-        private readonly CalculadoraIMCService _calculadora;
-        private readonly ApplicationDbContext _context;
+        private readonly CalculadoraIMCService _calculadoraIMCService;
 
-        public CalculoIMCsController(
-            CalculadoraIMCService calculadora,
-            ApplicationDbContext context)
+        // Constructor con inyección de dependencias
+        public CalculoIMCsController(CalculadoraIMCService calculadoraIMCService)
         {
-            _calculadora = calculadora;
-            _context = context;
+            _calculadoraIMCService = calculadoraIMCService;
         }
 
-        [HttpPost]
-        [Route("Calcular")]
+        // Método Calcular IMC
+        [HttpPost("calcular")]
         public async Task<IActionResult> Calcular([FromBody] CalculoIMCRequest request)
         {
-            // Validación del modelo
-            if (!ModelState.IsValid)
+            if (request == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("El cuerpo de la solicitud no puede estar vacío.");
             }
 
-            try
+            // Validar si Peso y AlturaCm no son nulos
+            if (!request.Peso.HasValue || !request.AlturaCm.HasValue)
             {
-                // Conversión de altura a metros
-                var alturaEnMetros = request.AlturaCm / 100.0;
-
-                // Cálculo del IMC
-                var (imc, categoria) = _calculadora.CalcularIMC(request.Peso, alturaEnMetros);
-
-                // Creación del registro en base de datos
-                var calculo = new CalculoIMC
-                {
-                    Peso = request.Peso,
-                    AlturaCm = request.AlturaCm, // Usar AlturaCm
-                    ResultadoIMC = imc,
-                    Categoria = categoria
-                    // FechaCalculo se genera en la base de datos
-                };
-
-                _context.CalculosIMC.Add(calculo);
-                await _context.SaveChangesAsync();
-
-                // Respuesta con los resultados
-                return Ok(new CalculoIMCResponse
-                {
-                    Imc = imc,
-                    Categoria = categoria,
-                    Id = calculo.Id,
-                    FechaCalculo = calculo.FechaCalculo
-                });
+                return BadRequest("Peso y altura son obligatorios.");
             }
-            catch (ArgumentException ex)
+
+            // Convertir altura a metros
+            double alturaEnMetros = request.AlturaCm.Value / 100;
+
+            // Imprimir para verificar los valores que están llegando
+            Console.WriteLine($"Peso recibido: {request.Peso.Value}, Altura recibida: {request.AlturaCm.Value} cm");
+
+            // Lógica del cálculo (peso ya es un valor double)
+            var resultadoIMC = _calculadoraIMCService.CalcularIMC(request.Peso.Value, alturaEnMetros);
+
+            // Imprimir el resultado del cálculo del IMC
+            Console.WriteLine($"IMC calculado: {resultadoIMC.imc}, Categoría: {resultadoIMC.categoria}");
+
+            // Verificar si el resultadoIMC es válido
+            if (resultadoIMC.imc <= 0)
             {
-                // Manejo de errores específicos del cálculo
-                return BadRequest(ex.Message);
+                return BadRequest("El cálculo del IMC no es válido.");
             }
-            catch (Exception ex)
-            {
-                // Manejo de errores generales (opcional)
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
-        }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CalculoIMC>>> GetHistorial()
-        {
-            return await _context.CalculosIMC.ToListAsync();
+            // Devuelve el resultado en el body
+            return Ok(new { imc = resultadoIMC.imc, categoria = resultadoIMC.categoria });
         }
     }
 }

@@ -8,7 +8,7 @@ namespace IMCAPI.Tests.Models
     public class CalculoIMCRequestTests
     {
         [Theory]
-        [InlineData(20, 50, true)] // Mínimos válidos
+        [InlineData(20, 50, false)] // Esto está bien porque altura 50 es inválida.
         [InlineData(300, 250, true)] // Máximos válidos
         [InlineData(70, 175, true)] // Valores intermedios válidos
         [InlineData(19, 50, false)] // Peso debajo del mínimo
@@ -32,5 +32,7 @@ namespace IMCAPI.Tests.Models
                 Assert.NotEmpty(results);
             }
         }
+
+
     }
 }

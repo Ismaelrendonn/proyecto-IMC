@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IMCAPI.Services
+﻿namespace IMCAPI.Services
 {
     public class CalculadoraIMCService
     {
@@ -13,7 +11,7 @@ namespace IMCAPI.Services
 
             string categoria = imc switch
             {
-                < 18.5 => "Bajo peso",                  // <-- Aquí estaba el problema
+                < 18.5 => "Bajo peso",
                 >= 18.5 and < 25 => "Normal",
                 >= 25 and < 30 => "Sobrepeso",
                 >= 30 and < 35 => "Obesidad grado I",
