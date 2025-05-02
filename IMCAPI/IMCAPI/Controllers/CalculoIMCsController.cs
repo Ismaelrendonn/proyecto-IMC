@@ -53,12 +53,12 @@ namespace IMCAPI.Controllers
                 await _context.SaveChangesAsync();
 
                 // Respuesta con los resultados
-                return Ok(new
+                return Ok(new CalculoIMCResponse
                 {
-                    imc,
-                    categoria,
+                    Imc = imc,
+                    Categoria = categoria,
                     Id = calculo.Id,
-                    fechaCalculo = calculo.FechaCalculo
+                    FechaCalculo = calculo.FechaCalculo
                 });
             }
             catch (ArgumentException ex)
