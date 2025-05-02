@@ -21,15 +21,12 @@ namespace IMCAPI.Tests.Controllers
 
         public CalculoIMCsControllerTests()
         {
-            // Usar una base de datos en memoria
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                             .UseInMemoryDatabase(databaseName: "TestDb")
                             .Options;
 
-            // Crear el contexto real con base de datos en memoria
             _mockContext = new ApplicationDbContext(options);
             _mockCalculadora = new Mock<CalculadoraIMCService>();
-
             _controller = new CalculoIMCsController(_mockCalculadora.Object, _mockContext);
         }
 
@@ -48,13 +45,11 @@ namespace IMCAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var actualCalculo = okResult.Value as dynamic;
+            var actualCalculo = Assert.IsType<CalculoIMCResponse>(okResult.Value); // Ya no es dynamic
 
             Assert.NotNull(actualCalculo);
-            Assert.Equal(expectedImc, actualCalculo.imc);
-            Assert.Equal(expectedCategoria, actualCalculo.categoria);
-
-            // Ya no es necesario verificar SaveChangesAsync en este caso
+            Assert.Equal(expectedImc, actualCalculo.Imc);           // Propiedad con mayúscula
+            Assert.Equal(expectedCategoria, actualCalculo.Categoria); // Propiedad con mayúscula
         }
 
         [Fact]
@@ -96,7 +91,6 @@ namespace IMCAPI.Tests.Controllers
                 new CalculoIMC { Id = 2, Peso = 80, AlturaCm = 170, ResultadoIMC = 27.68, Categoria = "Sobrepeso" }
             };
 
-            // Agregar los cálculos a la base de datos en memoria
             _mockContext.CalculosIMC.AddRange(calculosIMC);
             await _mockContext.SaveChangesAsync();
 
@@ -106,7 +100,7 @@ namespace IMCAPI.Tests.Controllers
             // Assert
             var actionResult = Assert.IsType<ActionResult<IEnumerable<CalculoIMC>>>(result);
             var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var actualCalculos = okResult.Value as List<CalculoIMC>;
+            var actualCalculos = Assert.IsType<List<CalculoIMC>>(okResult.Value);
 
             Assert.NotNull(actualCalculos);
             Assert.Equal(2, actualCalculos.Count);
