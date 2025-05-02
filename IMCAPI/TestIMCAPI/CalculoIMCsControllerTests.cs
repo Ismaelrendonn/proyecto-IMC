@@ -80,16 +80,19 @@ namespace IMCAPI.Tests.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Altura debe ser positiva", (badRequestResult.Value as string));
         }
-
         [Fact]
         public async Task GetHistorial_RetornaOkConListaDeCalculosIMC()
         {
+            // Limpiar datos previos
+            _mockContext.CalculosIMC.RemoveRange(_mockContext.CalculosIMC);
+            await _mockContext.SaveChangesAsync();
+
             // Arrange
             var calculosIMC = new List<CalculoIMC>
-            {
-                new CalculoIMC { Id = 1, Peso = 70, AlturaCm = 175, ResultadoIMC = 22.86, Categoria = "Normal" },
-                new CalculoIMC { Id = 2, Peso = 80, AlturaCm = 170, ResultadoIMC = 27.68, Categoria = "Sobrepeso" }
-            };
+    {
+        new CalculoIMC { Id = 1, Peso = 70, AlturaCm = 175, ResultadoIMC = 22.86, Categoria = "Normal" },
+        new CalculoIMC { Id = 2, Peso = 80, AlturaCm = 170, ResultadoIMC = 27.68, Categoria = "Sobrepeso" }
+    };
 
             _mockContext.CalculosIMC.AddRange(calculosIMC);
             await _mockContext.SaveChangesAsync();
@@ -97,13 +100,13 @@ namespace IMCAPI.Tests.Controllers
             // Act
             var result = await _controller.GetHistorial();
 
-            // Assert
-            var actionResult = Assert.IsType<ActionResult<IEnumerable<CalculoIMC>>>(result);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var actualCalculos = Assert.IsType<List<CalculoIMC>>(okResult.Value);
+            // ✅ Ya no uses Result porque es null cuando se devuelve directamente una lista
+            var actualCalculos = Assert.IsType<List<CalculoIMC>>(result.Value);
 
             Assert.NotNull(actualCalculos);
             Assert.Equal(2, actualCalculos.Count);
         }
+
+
     }
 }
