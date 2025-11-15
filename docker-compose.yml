@@ -1,0 +1,49 @@
+services:
+  # Frontend - Aplicación web bonita
+  frontend:
+    build: ./frontend
+    container_name: imc-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - imc-network
+
+  # API Backend
+  api:
+    build: ./IMCAPI/IMCAPI
+    container_name: imc-api
+    ports:
+      - "5000:80"
+      - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IMCDb;User=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - sqlserver
+    networks:
+      - imc-network
+
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: imc-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - imc-network
+
+networks:
+  imc-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:

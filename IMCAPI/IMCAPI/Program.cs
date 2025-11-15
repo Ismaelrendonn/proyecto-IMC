@@ -14,7 +14,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         builder => builder
-            .WithOrigins("http://localhost:3000") // Ajusta según tu frontend
+            .WithOrigins(
+                "http://localhost:3000",      // Frontend en Docker
+                "http://localhost:80",        // Nginx local
+                "http://imc-frontend",        // Nombre del contenedor
+                "http://frontend"             // Alias del contenedor
+            )
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -44,8 +49,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors("AllowFrontend"); // Solo en desarrollo para seguridad
 }
+
+// Habilitar CORS siempre (ajustar en producción según necesidades)
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

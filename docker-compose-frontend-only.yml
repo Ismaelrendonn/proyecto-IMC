@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  # Solo Frontend - Sin API ni Base de Datos
+  frontend:
+    build: ./frontend
+    container_name: imc-frontend-solo
+    ports:
+      - "3000:80"
+    restart: unless-stopped
