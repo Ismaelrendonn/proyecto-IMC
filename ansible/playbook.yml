@@ -1,0 +1,46 @@
+- hosts: imc_hosts
+  become: true
+  vars:
+    repo_url: "https://github.com/Ismaelrendonn/proyecto-IMC.git"
+    app_dir: /opt/proyecto-imc
+
+  tasks:
+    - name: Update apt and install prerequisites
+      apt:
+        update_cache: yes
+        name:
+          - git
+          - docker.io
+          - python3-pip
+          - curl
+        state: present
+
+    - name: Ensure docker is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add ubuntu to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Clone repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "main"
+
+    - name: Start docker-compose
+      shell: |
+        if [ -f "{{ app_dir }}/docker-compose.yml" ]; then
+          cd {{ app_dir }} && docker compose up -d
+        fi
+      args:
+        executable: /bin/bash
+
+    - name: Wait for services to be ready
+      pause:
+        seconds: 10
